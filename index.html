@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+   <h1>BOOK APPOINTMENT</h1>
+   <form onsubmit="save(event)">
+    <label for="name">NAME</label>
+   <input type="text" id="name" name="name"> 
+   <label for="number">NUMBER</label>
+   <input type="number" id="number" name="number"> 
+   <label for="email">EMAIL</label>
+   <input type="email" id="email" name="email"> 
+   <BUTTON>SUBMIT</BUTTON>
+   </form>
+   <ul id="list">
+   </ul>
+   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+   <script>
+    function save(event){
+        event.preventDefault();
+        const name=event.target.name.value;
+        const number=event.target.number.value;
+        const email=event.target.email.value;
+        const obj={
+            name,
+            number,
+            email
+        };
+        axios.post("http://localhost:4000/user/adduser",obj)
+        .then(res=>{
+            console.log(res.data.newuserdata);
+            screen(res.data.newuserdata);
+        })
+        .catch(err=>{
+            console.log(err);
+        });
+    }
+    function screen(obj){
+        let parent=document.getElementById("list");
+        let child=document.createElement("li");
+        child.textContent=obj.name+" - "+obj.number+" - "+obj.email;
+        const editbtn=document.createElement("input");
+        editbtn.type="button"
+        editbtn.value="Edit";
+        editbtn.onclick=()=>{
+            const id=obj.id;
+            axios.delete(`http://localhost:4000/user/deleteuser/${id}`)
+            .then(res=>console.log(res))
+            .catch(err=>alert(1));
+            parent.removeChild(child);
+            document.getElementById("name").value=obj.name;
+            document.getElementById("number").value=obj.number;
+            document.getElementById("email").value=obj.email;
+        }
+        const delbtn=document.createElement("input");
+        delbtn.type="button";
+        delbtn.value="Delete";
+        delbtn.onclick=()=>{
+            const id=obj.id;
+            console.log(id);
+            axios.delete(`http://localhost:4000/user/deleteuser/${id}`)
+            .then(res=>console.log(res))
+            .catch(err=>console.log(err));
+            parent.removeChild(child);
+        }
+        child.appendChild(editbtn)
+        child.appendChild(delbtn);
+        parent.appendChild(child);
+    }
+    window.addEventListener("DOMContentLoaded",()=>{
+    axios.get("http://localhost:4000/user/getusers")
+        .then((res)=>{
+            console.log(res);
+            for(let i=0;i<res.data.alluser.length;i++){
+                screen(res.data.alluser[i])
+            }
+        })
+        .catch((err)=>console.log(err));
+    })
+   </script>
+   
+</body>
+</html>
